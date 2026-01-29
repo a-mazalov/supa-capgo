@@ -2,4 +2,5 @@ volumes/db/*
 volumes/storage/*
 volumes/functions/*
 supabase/*
+capgo-docker/.env
 .env

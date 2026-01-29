@@ -38,8 +38,8 @@ services:
         condition: service_healthy
       rest:
         condition: service_started
-      imgproxy:
-        condition: service_started
+      # imgproxy:
+      #   condition: service_started
       minio:
         condition: service_healthy
     healthcheck:
@@ -84,6 +84,7 @@ services:
       - ./volumes/storage:/var/lib/storage:z
 
   imgproxy:
+    profiles: ["full"]
     container_name: supabase-imgproxy
     image: darthsim/imgproxy:v3.8.0
     healthcheck:

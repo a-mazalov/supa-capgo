@@ -1,0 +1,3 @@
+[submodule "capgo"]
+	path = capgo
+	url = https://github.com/Cap-go/capgo

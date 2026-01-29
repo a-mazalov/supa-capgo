@@ -195,6 +195,7 @@ services:
       ]
 
   realtime:
+    profiles: ["full"]
     # This container name looks inconsistent but is correct because realtime constructs tenant id by parsing the subdomain
     container_name: realtime-dev.supabase-realtime
     image: supabase/realtime:v2.68.0
@@ -258,8 +259,8 @@ services:
         condition: service_healthy
       rest:
         condition: service_started
-      imgproxy:
-        condition: service_started
+      # imgproxy:
+      #   condition: service_started
     environment:
       ANON_KEY: ${ANON_KEY}
       SERVICE_KEY: ${SERVICE_ROLE_KEY}

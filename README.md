@@ -85,3 +85,29 @@ See the [security section](https://supabase.com/docs/guides/self-hosting/docker#
 ## License
 
 This repository is licensed under the Apache 2.0 License. See the main [Supabase repository](https://github.com/supabase/supabase) for details.
+
+
+## Capgo Integration
+
+Capgo is included as a git submodule in this repo. To update/init the submodule and then sync the Edge Functions into Supabase, run:
+
+```sh
+git submodule update --init --recursive --remote --merge
+sh ./scripts/sync-capgo-functions.sh
+```
+
+## Commands
+
+```sh
+# Start / stop the stack (with S3 config)
+docker compose -f docker-compose.yml -f docker-compose.s3.yml -f docker-compose.capgo.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.s3.yml down -v --remove-orphans
+
+# Push database changes
+export PGSSLMODE=disable
+supabase db push --db-url postgresql://postgres.your-tenant-id:1a47509b9b71d77e28349802a39e8795@127.0.0.1:5432/postgres
+
+# Setup init data (admin user / plan)
+docker exec -i supabase-db \
+  psql -U postgres -d postgres < supabase/init.sql
+```
