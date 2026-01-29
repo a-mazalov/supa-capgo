@@ -1,0 +1,5 @@
+volumes/db/*
+volumes/storage/*
+volumes/functions/*
+supabase/*
+.env
