@@ -75,7 +75,7 @@ services:
       TENANT_ID: stub
       # TODO: https://github.com/supabase/storage-api/issues/55
       REGION: stub
-      ENABLE_IMAGE_TRANSFORMATION: "true"
+      ENABLE_IMAGE_TRANSFORMATION: "false"
       IMGPROXY_URL: http://imgproxy:5001
 
       S3_PROTOCOL_ACCESS_KEY_ID: b585f311d839730f8a980a3457be2787

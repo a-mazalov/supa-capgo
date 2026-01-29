@@ -322,6 +322,8 @@ services:
     container_name: supabase-edge-functions
     image: supabase/edge-runtime:v1.69.28
     restart: unless-stopped
+    env_file:
+      - ./volumes/functions/.env
     volumes:
       - ./volumes/functions:/home/deno/functions:Z
     depends_on:
