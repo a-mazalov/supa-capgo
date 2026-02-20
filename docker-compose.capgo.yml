@@ -1,7 +1,8 @@
 services:
   capgo:
-    build:
-      context: .
-      dockerfile: ./capgo-docker/Dockerfile
+    image: capgo:12.113.0
+    # build:
+    #   context: .
+    #   dockerfile: ./capgo-docker/Dockerfile
     ports:
       - "8084:80"

@@ -99,15 +99,29 @@ sh ./scripts/sync-capgo-functions.sh
 ## Commands
 
 ```sh
+docker compose -f docker-compose.yml -f docker-compose.capgo.yml up -d
+
+# Build image capgo
+sudo docker build -f ./capgo-docker/Dockerfile --tag capgo:18022026 .
+
 # Start / stop the stack (with S3 config)
 docker compose -f docker-compose.yml -f docker-compose.s3.yml -f docker-compose.capgo.yml up -d
 docker compose -f docker-compose.yml -f docker-compose.s3.yml down -v --remove-orphans
+```
 
-# Push database changes
+# Setup Capgo migrations
+[Postgres Docs](https://supabase.com/docs/guides/self-hosting/docker#accessing-postgres)
+```sh
+cd capgo
+
 export PGSSLMODE=disable
-supabase db push --db-url postgresql://postgres.your-tenant-id:1a47509b9b71d77e28349802a39e8795@127.0.0.1:5432/postgres
+supabase db push --db-url postgresql://postgres.[POOLER_TENANT_ID]:[PG_PASSWORD]@127.0.0.1:5433/postgres
+```
 
+### Setup admin user / unlimit plan
+
+```sh
 # Setup init data (admin user / plan)
 docker exec -i supabase-db \
-  psql -U postgres -d postgres < supabase/init.sql
+  psql -U postgres -d postgres < ./capgo-docker/init.sql
 ```
