@@ -27,6 +27,7 @@ services:
     depends_on:
       analytics:
         condition: service_healthy
+        required: false
     environment:
       # Binds nestjs listener to both IPv4 and IPv6 network interfaces
       HOSTNAME: "::"
@@ -78,6 +79,7 @@ services:
     depends_on:
       analytics:
         condition: service_healthy
+        required: false
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /home/kong/kong.yml
@@ -116,6 +118,7 @@ services:
         condition: service_healthy
       analytics:
         condition: service_healthy
+        required: false
     environment:
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
@@ -186,6 +189,7 @@ services:
         condition: service_healthy
       analytics:
         condition: service_healthy
+        required: false
     environment:
       PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       PGRST_DB_SCHEMAS: ${PGRST_DB_SCHEMAS}
@@ -200,6 +204,7 @@ services:
       ]
 
   realtime:
+    profiles: ["full"]
     # This container name looks inconsistent but is correct because realtime constructs tenant id by parsing the subdomain
     container_name: realtime-dev.supabase-realtime
     image: supabase/realtime:v2.76.5
@@ -210,6 +215,7 @@ services:
         condition: service_healthy
       analytics:
         condition: service_healthy
+        required: false
     healthcheck:
       test:
         [
@@ -252,6 +258,7 @@ services:
         condition: service_started
       imgproxy:
         condition: service_started
+        required: false
     healthcheck:
       test:
         [
@@ -286,7 +293,7 @@ services:
       TENANT_ID: ${STORAGE_TENANT_ID}
       # TODO: https://github.com/supabase/storage-api/issues/55
       REGION: ${REGION}
-      ENABLE_IMAGE_TRANSFORMATION: "true"
+      ENABLE_IMAGE_TRANSFORMATION: "false"
       IMGPROXY_URL: http://imgproxy:5001
       # S3 protocol endpoint configuration
       S3_PROTOCOL_ACCESS_KEY_ID: ${S3_PROTOCOL_ACCESS_KEY_ID}
@@ -295,6 +302,7 @@ services:
       - ./volumes/storage:/var/lib/storage:z
 
   imgproxy:
+    profiles: ["full"]
     container_name: supabase-imgproxy
     image: darthsim/imgproxy:v3.30.1
     restart: unless-stopped
@@ -327,6 +335,7 @@ services:
         condition: service_healthy
       analytics:
         condition: service_healthy
+        required: false
     environment:
       PG_META_PORT: 8080
       PG_META_DB_HOST: ${POSTGRES_HOST}
@@ -346,6 +355,7 @@ services:
     depends_on:
       analytics:
         condition: service_healthy
+        required: false
     environment:
       JWT_SECRET: ${JWT_SECRET}
       SUPABASE_URL: http://kong:8000
@@ -362,6 +372,7 @@ services:
       ]
 
   analytics:
+    profiles: ["full"]
     container_name: supabase-analytics
     image: supabase/logflare:1.31.2
     restart: unless-stopped
@@ -525,6 +536,7 @@ services:
         condition: service_healthy
       analytics:
         condition: service_healthy
+        required: false
     environment:
       PORT: 4000
       POSTGRES_PORT: ${POSTGRES_PORT}
