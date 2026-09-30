@@ -3,6 +3,9 @@ WORKDIR /app
 
 # Deps
 COPY ../capgo/package.json ../capgo/bun.* ../capgo/bunfig.* ./
+# Workspaces (see "workspaces" in capgo/package.json)
+COPY ../capgo/cli/package.json ./cli/
+COPY ../capgo/packages/capacitor-notifications/package.json ./packages/capacitor-notifications/
 RUN bun install --frozen-lockfile
 
 # Build

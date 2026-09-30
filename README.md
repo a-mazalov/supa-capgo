@@ -1,3 +1,10 @@
+<div align="center">
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/supabase/supabase/3-self-hosted-deployment)
+
+</div>
+
 # Self-Hosted Supabase with Docker
 
 This is the official Docker Compose setup for self-hosted Supabase. It provides a complete stack with all Supabase services running locally or on your infrastructure.
@@ -18,7 +25,7 @@ The guide covers:
 This Docker Compose configuration includes the following services:
 
 - **[Studio](https://github.com/supabase/supabase/tree/master/apps/studio)** - A dashboard for managing your self-hosted Supabase project
-- **[Kong](https://github.com/Kong/kong)** - Kong API gateway
+- **[Envoy](https://www.envoyproxy.io/)** - API gateway (default; Kong is available as an optional override via `sh run.sh config add kong`)
 - **[Auth](https://github.com/supabase/auth)** - JWT-based authentication API for user sign-ups, logins, and session management
 - **[PostgREST](https://github.com/PostgREST/postgrest)** - Web server that turns your PostgreSQL database directly into a RESTful API
 - **[Realtime](https://github.com/supabase/realtime)** - Elixir server that listens to PostgreSQL database changes and broadcasts them over websockets
@@ -33,22 +40,25 @@ This Docker Compose configuration includes the following services:
 
 ## Documentation
 
-- **[Documentation](https://supabase.com/docs/guides/self-hosting/docker)** - Setup and configuration guides
+- **[Self-Hosting with Docker](https://supabase.com/docs/guides/self-hosting/docker)** - Setup and configuration guides
 - **[CHANGELOG.md](./CHANGELOG.md)** - Track recent updates and changes to services
 - **[versions.md](./versions.md)** - Complete history of Docker image versions for rollback reference
+- **[Ask DeepWiki / Supabase](https://deepwiki.com/supabase/supabase/3-self-hosted-deployment)** - DeepWiki-generated description of self-hosted configuration
+- **[CONFIG.md](./CONFIG.md)** - Configuration reference for all environment variables
+- **[Update your deployment](https://supabase.com/docs/guides/self-hosting/updating)** - Update an existing deployment with `update.sh`
 
 ## Updates
 
-To update your self-hosted Supabase instance:
+Back up your database, then:
 
-1. Review [CHANGELOG.md](./CHANGELOG.md) for breaking changes
-2. Check [versions.md](./versions.md) for new image versions
-3. Update `docker-compose.yml` if there are configuration changes
-4. Pull the latest images: `docker compose pull`
-5. Stop services: `docker compose down`
-6. Start services with new configuration: `docker compose up -d`
+```sh
+sh update.sh --dry-run   # optional preview
+sh update.sh
+sh run.sh pull && sh run.sh recreate
+```
 
-**Note:** Consider to always backup your database before updating.
+See the **[update guide](https://supabase.com/docs/guides/self-hosting/updating)** for conflicts,
+breaking changes, pinning a release, and older installs without `.supabase-version`.
 
 ## Community & Support
 
@@ -73,55 +83,71 @@ Share your self-hosting experience:
 ⚠️ **The default configuration is not secure for production use.**
 
 Before deploying to production, you must:
-- Update all default passwords and secrets in the `.env` file
-- Generate new JWT secrets
+- [Update](https://supabase.com/docs/guides/self-hosting/docker#configuring-and-securing-supabase) all default passwords and secrets in the `.env` file
 - Review and update CORS settings
-- Consider setting up a secure proxy in front of self-hosted Supabase
+- Set up a [secure proxy](https://supabase.com/docs/guides/self-hosting/self-hosted-proxy-https) in front of your self-hosted Supabase
 - Review and adjust network security configuration (ACLs, etc.)
 - Set up proper backup procedures
 
-See the [security section](https://supabase.com/docs/guides/self-hosting/docker#configuring-and-securing-supabase) in the documentation.
+See the [main installation guide](https://supabase.com/docs/guides/self-hosting/docker) and the how-tos in the documentation.
 
 ## License
 
 This repository is licensed under the Apache 2.0 License. See the main [Supabase repository](https://github.com/supabase/supabase) for details.
 
+---
 
 ## Capgo Integration
 
-Capgo is included as a git submodule in this repo. To update/init the submodule and then sync the Edge Functions into Supabase, run:
+Based on upstream `self-hosted/v0.8.2` (see `.supabase-version`). Upstream files are kept
+unmodified; everything Capgo-specific lives in `docker-compose.capgo.yml`, enabled through
+`COMPOSE_FILE` in `.env`. Update the Supabase part with `sh update.sh`.
+
+Capgo is a git submodule. To update it and sync the Edge Functions into `volumes/functions`:
 
 ```sh
-git submodule update --init --recursive --remote --merge
+git submodule update --init --remote --merge
 sh ./scripts/sync-capgo-functions.sh
 ```
 
-## Commands
+Edge Functions read `volumes/functions/.env` (template: `capgo/supabase/functions/.env.example`).
+Storage S3 endpoint for Capgo is `S3_ENDPOINT=localhost:8000/storage/v1/s3` with
+`S3_PROTOCOL_ACCESS_KEY_ID` / `S3_PROTOCOL_ACCESS_KEY_SECRET` from `.env`.
+
+### Commands
 
 ```sh
-docker compose -f docker-compose.yml -f docker-compose.capgo.yml up -d
+# Build the Capgo console image (capgo-docker/.env is baked in at build time)
+docker build -f ./capgo-docker/Dockerfile --tag capgo:12.312.0 .
 
-# Build image capgo
-sudo docker build -f ./capgo-docker/Dockerfile --tag capgo:18022026 .
+sh run.sh start       # docker compose up -d --wait
+sh run.sh stop
+sh run.sh secrets     # print keys and passwords from .env
 
-# Start / stop the stack (with S3 config)
-docker compose -f docker-compose.yml -f docker-compose.s3.yml -f docker-compose.capgo.yml up -d
-docker compose -f docker-compose.yml -f docker-compose.s3.yml down -v --remove-orphans
+# realtime and imgproxy are disabled; to run them too:
+docker compose --profile full up -d
 ```
 
-# Setup Capgo migrations
-[Postgres Docs](https://supabase.com/docs/guides/self-hosting/docker#accessing-postgres)
+### Capgo migrations
+
+Requires Supabase CLI >= 2.109 and Postgres 17.
+
 ```sh
 cd capgo
-
 export PGSSLMODE=disable
-supabase db push --db-url postgresql://postgres.[POOLER_TENANT_ID]:[PG_PASSWORD]@127.0.0.1:5433/postgres
+supabase db push --db-url "postgresql://postgres.<POOLER_TENANT_ID>:<POSTGRES_PASSWORD>@127.0.0.1:<POSTGRES_PORT>/postgres"
 ```
 
-### Setup admin user / unlimit plan
+### Bootstrap (admin user, RBAC, unlimited plan)
+
+Run after the migrations. Idempotent — re-run after every capgo update, since it
+re-syncs the RBAC permissions catalog from `capgo/supabase/seed.sql`.
 
 ```sh
-# Setup init data (admin user / plan)
-docker exec -i supabase-db \
-  psql -U postgres -d postgres < ./capgo-docker/init.sql
+ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=... sh scripts/init-capgo.sh
 ```
+
+It creates the admin via the Auth admin API and registers it as platform admin,
+sets the vault secrets used by DB triggers/queues (`db_url`, `apikey` = `API_SECRET`
+from `volumes/functions/.env`), creates storage buckets and the unlimited plan, and
+installs a trigger that keeps every organization on that plan.

@@ -1,8 +1,39 @@
+# Capgo overrides on top of the upstream Supabase stack.
+# Enabled via COMPOSE_FILE in .env (sh run.sh config add capgo).
+# Keep upstream files untouched so `sh update.sh` can merge cleanly.
+
 services:
+  functions:
+    env_file:
+      - ./volumes/functions/.env
+
+  storage:
+    # imgproxy is disabled (profile "full"), so drop the dependency on it
+    depends_on: !override
+      db:
+        condition: service_healthy
+      rest:
+        condition: service_started
+    environment:
+      ENABLE_IMAGE_TRANSFORMATION: "false"
+    # The file backend stores metadata in xattrs, which Docker Desktop (macOS)
+    # bind mounts don't support: keep objects in a named volume instead.
+    volumes: !override
+      - storage-data:/var/lib/storage
+
+  # Not used by Capgo. Start with: docker compose --profile full up -d
+  realtime:
+    profiles: ["full"]
+  imgproxy:
+    profiles: ["full"]
+
   capgo:
-    image: capgo:12.113.0
+    image: capgo:12.312.0
     # build:
     #   context: .
     #   dockerfile: ./capgo-docker/Dockerfile
     ports:
       - "8084:80"
+
+volumes:
+  storage-data:
