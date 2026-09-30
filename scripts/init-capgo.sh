@@ -15,7 +15,8 @@ cd "$(dirname "$0")/.."
 
 SEED="capgo/supabase/seed.sql"
 INIT_SQL="capgo-docker/init.sql"
-FUNCTIONS_ENV="volumes/functions/.env"
+FUNCTIONS_ENV="supabase/volumes/functions/.env"
+SUPABASE_ENV="supabase/.env"
 DB_CONTAINER="supabase-db"
 # URL the database (pg_net) uses to reach edge functions inside the compose network
 DB_URL="http://api-gw:8000"
@@ -26,8 +27,8 @@ psql_db() { docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ER
 [ -n "$ADMIN_EMAIL" ] || { echo "ERROR: set ADMIN_EMAIL" >&2; exit 1; }
 [ -f "$SEED" ] || { echo "ERROR: $SEED not found (git submodule update --init?)" >&2; exit 1; }
 
-SERVICE_ROLE_KEY=$(env_get .env SERVICE_ROLE_KEY)
-API_URL="http://localhost:$(env_get .env API_GW_HTTP_PORT)"
+SERVICE_ROLE_KEY=$(env_get "$SUPABASE_ENV" SERVICE_ROLE_KEY)
+API_URL="http://localhost:$(env_get "$SUPABASE_ENV" API_GW_HTTP_PORT)"
 
 # 1. API_SECRET shared by the database (vault 'apikey') and edge functions
 API_SECRET=$(env_get "$FUNCTIONS_ENV" API_SECRET)

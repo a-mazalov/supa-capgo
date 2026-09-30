@@ -1,8 +1,10 @@
 #!/bin/sh
 set -e
 
+cd "$(dirname "$0")/.."
+
 SRC="capgo/supabase/functions"
-DST="volumes/functions"
+DST="supabase/volumes/functions"
 # upstream Supabase files tracked in git (.env is a dotfile, so `*` never removes it)
 KEEP="main hello deno.jsonc"
 

@@ -1,11 +1,11 @@
-# Capgo overrides on top of the upstream Supabase stack.
-# Enabled via COMPOSE_FILE in .env (sh run.sh config add capgo).
-# Keep upstream files untouched so `sh update.sh` can merge cleanly.
+# Capgo changes to upstream Supabase services (supabase/docker-compose.yml).
+# Loaded automatically by `docker compose` together with docker-compose.yml.
+# Relative paths resolve from the repository root.
 
 services:
   functions:
     env_file:
-      - ./volumes/functions/.env
+      - ./supabase/volumes/functions/.env
 
   storage:
     # imgproxy is disabled (profile "full"), so drop the dependency on it
@@ -26,14 +26,6 @@ services:
     profiles: ["full"]
   imgproxy:
     profiles: ["full"]
-
-  capgo:
-    image: capgo:12.312.0
-    # build:
-    #   context: .
-    #   dockerfile: ./capgo-docker/Dockerfile
-    ports:
-      - "8084:80"
 
 volumes:
   storage-data:

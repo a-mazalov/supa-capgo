@@ -1,0 +1,18 @@
+# Production: publish ports on localhost only, behind the host's reverse proxy
+# (see deploy/nginx.conf). Without this, Postgres and the pooler are exposed on
+# all interfaces.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.override.yml \
+#     -f docker-compose.prod.yml up -d --wait
+
+services:
+  api-gw:
+    ports: !override
+      - "127.0.0.1:8000:8000"
+  supavisor:
+    ports: !override
+      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:6543:6543"
+  capgo:
+    ports: !override
+      - "127.0.0.1:8084:80"
