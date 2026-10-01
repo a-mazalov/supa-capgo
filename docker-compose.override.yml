@@ -6,6 +6,11 @@ services:
   functions:
     env_file:
       - ./supabase/volumes/functions/.env
+    # Each function worker is capped at 150 MB (memoryLimitMb in
+    # supabase/volumes/functions/main/index.ts); this caps the whole runtime.
+    # On overflow the container is OOM-killed and restarted.
+    mem_limit: 2g
+    memswap_limit: 2g
 
   storage:
     # imgproxy is disabled (profile "full"), so drop the dependency on it
